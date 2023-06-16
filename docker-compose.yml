@@ -6,19 +6,20 @@ services:
       args:
         WWWUSER: "${WWWUSER:-1000}"
         WWWGROUP: "${WWWGROUP:-1000}"
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./src:/work
+      - ./:/work
     ports:
       - 8000:8000
-  db:
+  mysql:
     build:
       context: ./docker/mysql
     volumes:
       - db:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: gpt-tools
-      MYSQL_USER: gpt-tools
+      MYSQL_DATABASE: gpttools
+      MYSQL_USER: gpttools
+      MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password
     ports:
       - 3306:3306

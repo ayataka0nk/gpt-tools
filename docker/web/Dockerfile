@@ -6,7 +6,7 @@ ARG WWWGROUP
 WORKDIR /work
 
 # 依存パッケージのインストール
-RUN pip install fastapi uvicorn
+RUN pip install fastapi uvicorn sqlalchemy alembic mysqlclient
 
 # 実行ユーザの作成
 RUN addgroup --gid $WWWGROUP mygroup
