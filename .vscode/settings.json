@@ -8,4 +8,9 @@
   "python.linting.flake8Args": [
     "--ignore=E501" // 1行の文字数制限を無視
   ],
+  "python.analysis.diagnosticSeverityOverrides": {
+    // 環境はdockerで作ってるので次の2つを切らないと全部のファイルに出て辛い
+    "reportMissingModuleSource": "none",
+    "reportMissingImports": "none"
+  }
 }
