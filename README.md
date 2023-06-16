@@ -2,8 +2,10 @@
 
 ## ディレクトリ構成
 
-これでやってみる
+ベースはこれでやってみる
 https://github.com/zhanymkanov/fastapi-best-practices
+
+serviceは増えてくはずなのでさすがにservicesとして別に切る
 
 ## エディタ環境構築作業メモ？
 
