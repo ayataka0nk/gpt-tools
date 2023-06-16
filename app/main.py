@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .users import router as usersRouter
+from . import users
 
 app = FastAPI()
 
@@ -14,4 +14,4 @@ def read_item(item_id: int, q: str = None):
     return {"item_id": item_id, "q": q}
 
 
-app.include_router(usersRouter.router)
+app.include_router(users.router)
