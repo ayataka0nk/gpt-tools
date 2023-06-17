@@ -42,3 +42,8 @@ mysqlclientのインストール絡みでこの辺が必要になるかも。
 ```
 apt -y install libmysqlclient-dev python3.11-dev
 ```
+
+ローカル用開発サーバを立てるのはこう。
+```
+uvicorn app.main:app --reload
+```
