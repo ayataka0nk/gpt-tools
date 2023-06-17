@@ -5,20 +5,22 @@
 ベースはこれでやってみる
 https://github.com/zhanymkanov/fastapi-best-practices
 
-serviceは増えてくはずなのでさすがにservicesとして別に切る
+service は増えてくはずなのでさすがに services として別に切る
 
 ## エディタ環境構築作業メモ？
 
-拡張機能Flake8をインストール
+拡張機能 Flake8 をインストール
 
-下記コマンドでautopep8をエディタから見えるpython環境にインストール。vscode拡張機能のautopep8はなぜか動かなかったので使わない。
+下記コマンドで autopep8 をエディタから見える python 環境にインストール。vscode 拡張機能の autopep8 はなぜか動かなかったので使わない。
+↓、venv 使う場合は不要
+
 ```
 pip install autopep8
 ```
 
-## python環境としてdockerを使わない場合
+## python 環境として docker を使わない場合
 
-wslでの構築方法。linuxでも同じはず。macは引っかかるポイントあるかも。
+wsl での構築方法。linux でも同じはず。mac は引っかかるポイントあるかも。
 
 ```
 # 自環境に合ったやり方でpython3.11とvenvをインストール
@@ -26,6 +28,7 @@ sudo apt install python3.11 python3.11-venv
 ```
 
 プロジェクトルートで
+
 ```
 python -m venv .venv
 source .venv/bin/activate
@@ -38,12 +41,28 @@ pip install -r requirements.txt
 pip freeze > requirements.txt
 ```
 
-mysqlclientのインストール絡みでこの辺が必要になるかも。
+mysqlclient のインストール絡みでこの辺が必要になるかも。
+
 ```
 apt -y install libmysqlclient-dev python3.11-dev
 ```
 
 ローカル用開発サーバを立てるのはこう。
+
 ```
 uvicorn app.main:app --reload
+```
+
+## たまに使うコマンドメモ
+
+### マイグレーション作成
+
+```
+alembic revision -m "名前"
+```
+
+### マイグレーション適用
+
+```
+alembic upgrade head
 ```
