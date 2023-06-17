@@ -1,6 +1,6 @@
 import sqlalchemy
 
-DATABASE_URL = "mysql://gpttools:password@mysql/gpttools"
+DATABASE_URL = "mysql://gpttools:password@127.0.0.1:3306/gpttools"
 
 engine = sqlalchemy.create_engine(DATABASE_URL)
 
