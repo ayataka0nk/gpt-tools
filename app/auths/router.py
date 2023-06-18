@@ -6,7 +6,6 @@ from . import services
 from ..database import get_db
 from .schemas import LoginSuccessResponse
 from ..errors import make_responses, UnauthorizedException, ValidationException
-from app.users.models import User
 
 router = APIRouter(
     prefix='/auth'
@@ -22,8 +21,3 @@ def login(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], db: Anno
         db, email=credentials.username, password=credentials.password)
     tokens = services.create_tokens(db, user_id)
     return tokens
-
-
-@router.get('/me')
-def me(user: User = Depends(services.get_user)):
-    return user

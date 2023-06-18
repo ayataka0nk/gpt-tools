@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from . import auths, users
+from . import auths, users, profile
 
 from .errors import ValidationException
 
@@ -42,3 +42,4 @@ def read_item(item_id: int, q: str = None):
 
 app.include_router(users.router)
 app.include_router(auths.router)
+app.include_router(profile.router)
