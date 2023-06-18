@@ -1,4 +1,5 @@
 from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import load_only
 from app.users.models import User
@@ -6,11 +7,12 @@ from datetime import datetime, timedelta
 from jose import jwt
 import os
 import base64
+from app.database import get_db
 from .models import RefreshToken
 from .schemas import Tokens
 from ..errors.exceptions import UnauthorizedException
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def authenticate(db: Session, email: str, password: str):
@@ -69,7 +71,7 @@ def is_jwt(token):
     return True
 
 
-def get_user(db: Session, token: str) -> User:
+def get_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
     if (is_jwt(token)):
         # TODO: JWTのシークレットキーを環境変数から取得する
         # 有効期限と署名は自動で検証される。
@@ -88,7 +90,9 @@ def get_user(db: Session, token: str) -> User:
         if (db_refresh_token is None):
             raise UnauthorizedException()
 
-        user = db.query(User).filter(
+        user = db.query(User).options(load_only(
+            User.id, User.email, User.name
+        )).filter(
             User.id == db_refresh_token.user_id).first()
         if (user is None):
             raise UnauthorizedException()

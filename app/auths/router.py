@@ -1,10 +1,12 @@
 from sqlalchemy.orm import Session
 from typing import Annotated
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends
 from . import services
 from ..database import get_db
-from .schemas import Credentials, LoginSuccessResponse
+from .schemas import LoginSuccessResponse
 from ..errors import make_responses, UnauthorizedException, ValidationException
+from app.users.models import User
 
 router = APIRouter(
     prefix='/auth'
@@ -12,11 +14,16 @@ router = APIRouter(
 
 
 @router.post(
-    "/login",
+    "/token",
     response_model=LoginSuccessResponse,
     responses=make_responses([UnauthorizedException(), ValidationException()]))
-def login(credentials: Credentials, db: Annotated[Session, Depends(get_db)]):
+def login(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)]):
     user_id = services.authenticate(
-        db, credentials.email, credentials.password)
+        db, email=credentials.username, password=credentials.password)
     tokens = services.create_tokens(db, user_id)
     return tokens
+
+
+@router.get('/me')
+def me(user: User = Depends(services.get_user)):
+    return user

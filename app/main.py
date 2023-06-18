@@ -3,8 +3,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from .users import router as usersRouter
-from .auths import router as authsRouter
+from . import auths, users
+
 from .errors import ValidationException
 
 app = FastAPI()
@@ -40,5 +40,5 @@ def read_item(item_id: int, q: str = None):
     return {"item_id": item_id, "q": q}
 
 
-app.include_router(usersRouter.router)
-app.include_router(authsRouter.router)
+app.include_router(users.router)
+app.include_router(auths.router)
