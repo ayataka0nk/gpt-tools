@@ -7,7 +7,8 @@ from .schemas import Profile
 
 
 router = APIRouter(
-    prefix='/profile'
+    prefix='/profile',
+    tags=['profile']
 )
 
 

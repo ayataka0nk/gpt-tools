@@ -12,7 +12,7 @@ from .models import RefreshToken
 from .schemas import Tokens
 from ..errors.exceptions import UnauthorizedException
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 def authenticate(db: Session, email: str, password: str):
