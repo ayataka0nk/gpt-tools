@@ -57,6 +57,11 @@ def delete_tokens(db: Session, user_id: int):
     db.commit()
 
 
+def delete_token(db: Session, refresh_token: str):
+    db.query(RefreshToken).filter(RefreshToken.token == refresh_token).delete()
+    db.commit()
+
+
 def is_jwt(token):
     try:
         header, payload, signature = token.split('.')

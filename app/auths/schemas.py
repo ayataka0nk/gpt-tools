@@ -13,3 +13,7 @@ class Tokens(BaseModel):
 
 class LoginSuccessResponse(Tokens):
     pass
+
+
+class ClearTokenRequest(BaseModel):
+    refresh_token: str = Field(..., example="foorbar")
