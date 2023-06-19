@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from . import auths, users, profile, chat
+from . import auths, users, profile, conversations
 from .errors import ValidationException
 
 # TODO 環境変数で設定できるようにする
@@ -46,4 +46,4 @@ def read_root():
 app.include_router(users.router)
 app.include_router(auths.router)
 app.include_router(profile.router)
-app.include_router(chat.router)
+app.include_router(conversations.router)

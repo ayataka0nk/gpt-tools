@@ -7,8 +7,8 @@ from app.users import User
 from app.auths import get_user
 
 router = APIRouter(
-    prefix='/chat',
-    tags=['chat']
+    prefix='/conversations',
+    tags=['conversations']
 )
 
 
