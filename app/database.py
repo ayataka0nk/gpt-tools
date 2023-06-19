@@ -1,4 +1,5 @@
 import sqlalchemy
+from sqlalchemy.orm import Session
 
 DATABASE_URL = "mysql://gpttools:password@127.0.0.1:3306/gpttools"
 
@@ -16,3 +17,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+__all__ = [get_db, Session]

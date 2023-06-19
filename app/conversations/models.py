@@ -2,7 +2,6 @@ import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from ..database import Base
-from .schemas import Conversation
 
 
 class ConversationModel(Base):
@@ -18,13 +17,6 @@ class ConversationModel(Base):
     user = relationship("User", back_populates="conversations")
     messages = relationship("ConversationMessageModel",
                             back_populates="conversation")
-
-    def toConversation(self):
-        return Conversation(
-            conversation_id=self.conversation_id,
-            user_id=self.user_id,
-            created_at=self.created_at,
-        )
 
 
 class ConversationMessageModel(Base):
