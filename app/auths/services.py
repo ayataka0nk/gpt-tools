@@ -22,7 +22,7 @@ def authenticate(db: Session, email: str, password: str):
         raise UnauthorizedException()
     if not user.verify_password(password):
         raise UnauthorizedException()
-    return user.id
+    return user.user_id
 
 
 def create_access_token(user_id: int):
@@ -83,8 +83,8 @@ def get_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme))
         payload = jwt.decode(token, 'SECRET_KEY123', algorithms=['HS256'])
         # パスワード以外
         user = db.query(User).options(load_only(
-            User.id, User.email, User.name
-        )) .filter(User.id == payload['user_id']).first()
+            User.user_id, User.email, User.name
+        )) .filter(User.user_id == payload['user_id']).first()
 
         if (user is None):
             raise UnauthorizedException()
@@ -96,9 +96,9 @@ def get_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme))
             raise UnauthorizedException()
 
         user = db.query(User).options(load_only(
-            User.id, User.email, User.name
+            User.user_id, User.email, User.name
         )).filter(
-            User.id == db_refresh_token.user_id).first()
+            User.user_id == db_refresh_token.user_id).first()
         if (user is None):
             raise UnauthorizedException()
         return user
