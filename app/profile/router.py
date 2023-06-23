@@ -16,7 +16,7 @@ router = APIRouter(
     UnauthorizedException()]))
 def get_profile(user: User = Depends(get_user)):
     return Profile(
-        id=user.user_id,
+        user_id=user.user_id,
         email=user.email,
         name=user.name
     )
