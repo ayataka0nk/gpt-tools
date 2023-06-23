@@ -34,11 +34,13 @@ def update_conversation(conversation_id: int, conversation: ConversationUpdate, 
     db.commit()
 
 
-def get_conversation_messages(conversation_id: int, db: Session):
+def get_conversation_messages(conversation_id: int, db: Session) -> List[ConversationMessage]:
     statement = select(ConversationMessageModel).where(
         ConversationMessageModel.conversation_id == conversation_id).order_by(
         ConversationMessageModel.created_at.asc())
-    messages = db.execute(statement).scalars().all()
+    message_models = db.execute(statement).scalars().all()
+    messages = list(
+        map(lambda message: ConversationMessage.from_conversation_message_model(message), message_models))
     return messages
 
 
