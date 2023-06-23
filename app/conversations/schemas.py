@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from .models import ConversationModel
+from .models import ConversationModel, ConversationMessageModel
+from .constants import RoleType
 
 
 class Conversation(BaseModel):
@@ -9,7 +10,7 @@ class Conversation(BaseModel):
     title: str = Field(..., example="英会話の練習")
     created_at: datetime = Field(..., example="2020-01-01 00:00:00")
 
-    def fromConversationModel(model: ConversationModel):
+    def from_conversation_model(model: ConversationModel):
         return Conversation(
             conversation_id=model.conversation_id,
             user_id=model.user_id,
@@ -31,8 +32,38 @@ class ConversationUpdate(BaseModel):
 
 
 class ConversationMessage(BaseModel):
-    conver_message_id: int = Field(..., example=1)
+    conversation_message_id: int = Field(..., example=1)
     conversation_id: int = Field(..., example=1)
     role_type: int = Field(..., example=1)
     content: str = Field(..., example="こんにちは")
     created_at: datetime = Field(..., example="2020-01-01 00:00:00")
+
+    def from_conversation_message_model(model: ConversationMessageModel):
+        return ConversationMessage(
+            conversation_message_id=model.conversation_message_id,
+            conversation_id=model.conversation_id,
+            role_type=model.role_type,
+            content=model.content,
+            created_at=model.created_at,
+        )
+
+    def to_prompt_message(self):
+        return PromptMessage(
+            role=RoleType(self.role_type).role,
+            content=self.content
+        )
+
+
+class PromptMessage(BaseModel):
+    role: str = Field(..., example='system')
+    content: str = Field(..., example="こんにちは")
+
+    def to_dict(self):
+        return {
+            "role": self.role,
+            "content": self.content
+        }
+
+
+class PostConversationMessageRequestBody(BaseModel):
+    user_message: str = Field(..., example="こんにちは")

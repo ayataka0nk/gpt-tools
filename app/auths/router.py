@@ -31,7 +31,7 @@ def login(credentials: Annotated[OAuth2PasswordRequestForm, Depends()], db: Anno
     response_model=LoginSuccessResponse,
     responses=make_responses([UnauthorizedException()]))
 def refresh_token(db: Annotated[Session, Depends(get_db)], user: Annotated[User, Depends(get_user)]):
-    tokens = create_tokens(db, user.id)
+    tokens = create_tokens(db, user.user_id)
     return tokens
 
 

@@ -5,10 +5,23 @@ from config import Settings, get_settings
 from app.users import User
 from app.auths import get_user
 
-from .schemas import Conversation, ConversationCreate, ConversationCreateResponse, ConversationUpdate
+from .schemas import (
+    Conversation,
+    ConversationCreate,
+    ConversationCreateResponse,
+    ConversationUpdate,
+    ConversationMessage,
+    PostConversationMessageRequestBody
+)
 from ..database import get_db, Session
-from .services import create_chat_completion, get_conversations, create_conversation, update_conversation
 
+from .services import (
+    get_conversations,
+    create_conversation,
+    update_conversation,
+    get_conversation_messages,
+    post_conversation_message
+)
 from .dependencies import valid_user_conversation_id
 
 
@@ -46,7 +59,23 @@ def update_conversation_api(
     return
 
 
-@router.post('/request-reply')
-def request_reply(user: Annotated[User, Depends(get_user)], settings: Annotated[Settings, Depends(get_settings)]):
-    result = create_chat_completion(api_key=settings.openai_api_key)
+@router.get('/{conversation_id}/messages', response_model=List[ConversationMessage])
+def get_conversation_messages_api(
+        conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
+        db: Annotated[Session, Depends(get_db)]):
+    return get_conversation_messages(conversation_id=conversation_id, db=db)
+
+
+@router.post('/{conversation_id}/messages')
+def post_conversation_message_api(
+    conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
+    body: PostConversationMessageRequestBody,
+    db: Annotated[Session, Depends(get_db)],
+    settings: Annotated[Settings, Depends(get_settings)]
+):
+    result = post_conversation_message(
+        conversation_id=conversation_id,
+        user_message_content=body.user_message,
+        db=db,
+        openai_api_key=settings.openai_api_key)
     return StreamingResponse(result, media_type="text/event-stream")
