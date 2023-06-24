@@ -1,7 +1,6 @@
-from typing import Annotated, List
+from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from config import Settings, get_settings
 from app.users import User
 from app.auths import get_user
 
@@ -11,16 +10,20 @@ from .schemas import (
     ConversationCreateResponse,
     ConversationUpdate,
     ConversationMessage,
-    PostConversationMessageRequestBody
+    PostConversationMessageRequestBody,
+    PostConversationSystemMessageRequestBody
 )
 from ..database import get_db, Session
+
+from app.llms import ChatCompletion, create_chat_completion_gpt3p5turbo
 
 from .services import (
     get_conversations,
     create_conversation,
     update_conversation,
     get_conversation_messages,
-    post_conversation_message
+    post_conversation_message,
+    store_system_message
 )
 from .dependencies import valid_user_conversation_id
 
@@ -31,7 +34,7 @@ router = APIRouter(
 )
 
 
-@router.get('', response_model=List[Conversation])
+@router.get('', response_model=list[Conversation])
 def get_conversations_api(user: Annotated[User, Depends(get_user)], db: Annotated[Session, Depends(get_db)]):
     return get_conversations(db=db, user_id=user.user_id)
 
@@ -59,7 +62,7 @@ def update_conversation_api(
     return
 
 
-@router.get('/{conversation_id}/messages', response_model=List[ConversationMessage])
+@router.get('/{conversation_id}/messages', response_model=list[ConversationMessage])
 def get_conversation_messages_api(
         conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
         db: Annotated[Session, Depends(get_db)]):
@@ -71,11 +74,24 @@ def post_conversation_message_api(
     conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
     body: PostConversationMessageRequestBody,
     db: Annotated[Session, Depends(get_db)],
-    settings: Annotated[Settings, Depends(get_settings)]
+    chatCompletion: Annotated[ChatCompletion, Depends(create_chat_completion_gpt3p5turbo)],
 ):
     result = post_conversation_message(
         conversation_id=conversation_id,
         user_message_content=body.user_message,
         db=db,
-        openai_api_key=settings.openai_api_key)
+        chatCompletion=chatCompletion)
     return StreamingResponse(result, media_type="text/event-stream")
+
+
+@ router.post('/{conversation_id}/system-message')
+def post_system_message_api(
+    conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
+    body: PostConversationSystemMessageRequestBody,
+    db: Annotated[Session, Depends(get_db)],
+):
+    store_system_message(
+        conversation_id=conversation_id,
+        system_message_content=body.system_message,
+        db=db)
+    return

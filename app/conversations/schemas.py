@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from .models import ConversationModel, ConversationMessageModel
 from .constants import RoleType
+from app.llms import PromptMessage
 
 
 class Conversation(BaseModel):
@@ -54,16 +55,10 @@ class ConversationMessage(BaseModel):
         )
 
 
-class PromptMessage(BaseModel):
-    role: str = Field(..., example='system')
-    content: str = Field(..., example="こんにちは")
-
-    def to_dict(self):
-        return {
-            "role": self.role,
-            "content": self.content
-        }
-
-
 class PostConversationMessageRequestBody(BaseModel):
     user_message: str = Field(..., example="こんにちは")
+
+
+class PostConversationSystemMessageRequestBody(BaseModel):
+    system_message: str = Field(...,
+                                example='あなたは優秀なソフトウェアエンジニアとして、userの相談を受けてください。\nuserはプログラミングについての知識がないので、できるだけわかりやすく説明してください。')

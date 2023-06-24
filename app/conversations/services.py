@@ -1,14 +1,13 @@
 from .schemas import Conversation, ConversationCreate, ConversationUpdate, PromptMessage, ConversationMessage
 from .models import ConversationModel, ConversationMessageModel
-import openai
-from typing import List, Generator
 from sqlalchemy import select
 from app.database import Session
 from datetime import datetime
 from .constants import RoleType
+from app.llms import ChatCompletion
 
 
-def get_conversations(user_id: int, db: Session) -> List[Conversation]:
+def get_conversations(user_id: int, db: Session) -> list[Conversation]:
     statement = select(ConversationModel).where(
         ConversationModel.user_id == user_id).order_by(ConversationModel.created_at.desc())
     conversations = db.execute(statement).scalars().all()
@@ -34,7 +33,7 @@ def update_conversation(conversation_id: int, conversation: ConversationUpdate, 
     db.commit()
 
 
-def get_conversation_messages(conversation_id: int, db: Session) -> List[ConversationMessage]:
+def get_conversation_messages(conversation_id: int, db: Session) -> list[ConversationMessage]:
     statement = select(ConversationMessageModel).where(
         ConversationMessageModel.conversation_id == conversation_id).order_by(
         ConversationMessageModel.created_at.asc())
@@ -44,20 +43,7 @@ def get_conversation_messages(conversation_id: int, db: Session) -> List[Convers
     return messages
 
 
-def create_chat_completion(promptMessages: PromptMessage, api_key: str) -> Generator[str, None, None]:
-    openai.api_key = api_key
-    messages = list(map(lambda message: message.dict(), promptMessages))
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo", messages=messages, stream=True)
-    for chunk in response:
-        delta = chunk['choices'][0]['delta']
-        word = delta.get('content')
-        if (word is None):
-            continue
-        yield word
-
-
-def make_prompt_messages(conversation_id: int, db: Session) -> List[PromptMessage]:
+def make_prompt_messages(conversation_id: int, db: Session) -> list[PromptMessage]:
     # とりあえず直近6件だけ TODO 用途に応じた過去のプロンプト管理を設計
     statement = select(ConversationMessageModel).where(
         ConversationMessageModel.conversation_id == conversation_id).order_by(
@@ -76,7 +62,22 @@ def make_prompt_messages(conversation_id: int, db: Session) -> List[PromptMessag
     return promptMessages
 
 
-def post_conversation_message(conversation_id: int, user_message_content: str, db: Session, openai_api_key: str):
+def store_system_message(conversation_id: int, system_message_content: str, db: Session):
+    system_message = ConversationMessageModel(
+        conversation_id=conversation_id,
+        role_type=RoleType.SYSTEM.id,
+        content=system_message_content,
+        created_at=datetime.now()
+    )
+    db.add(system_message)
+    db.commit()
+
+
+def post_conversation_message(
+        conversation_id: int,
+        user_message_content: str,
+        db: Session,
+        chatCompletion: ChatCompletion):
     user_message = ConversationMessageModel(
         conversation_id=conversation_id,
         role_type=RoleType.USER.id,
@@ -88,12 +89,9 @@ def post_conversation_message(conversation_id: int, user_message_content: str, d
 
     promptMessages = make_prompt_messages(
         conversation_id=conversation_id, db=db)
-    print(promptMessages)
     try:
         assistant_message_content = ''
-        completion = create_chat_completion(
-            promptMessages=promptMessages,
-            api_key=openai_api_key)
+        completion = chatCompletion.stream(promptMessages=promptMessages)
 
         for word in completion:
             assistant_message_content += word

@@ -1,8 +1,7 @@
-from typing import List
 from .exceptions import MyHTTPException
 
 
-def make_responses(errors: List[MyHTTPException]):
+def make_responses(errors: list[MyHTTPException]):
     responses = {}
     for error in errors:
         responses[error.status_code] = {
