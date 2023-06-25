@@ -33,6 +33,13 @@ def update_conversation(conversation_id: int, conversation: ConversationUpdate, 
     db.commit()
 
 
+def get_conversation(conversation_id: int, db: Session) -> Conversation:
+    statement = select(ConversationModel).where(
+        ConversationModel.conversation_id == conversation_id)
+    conversation_model = db.execute(statement).scalar_one()
+    return Conversation.from_conversation_model(conversation_model)
+
+
 def get_conversation_messages(conversation_id: int, db: Session) -> list[ConversationMessage]:
     statement = select(ConversationMessageModel).where(
         ConversationMessageModel.conversation_id == conversation_id).order_by(

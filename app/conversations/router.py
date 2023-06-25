@@ -23,7 +23,8 @@ from .services import (
     update_conversation,
     get_conversation_messages,
     post_conversation_message,
-    store_system_message
+    store_system_message,
+    get_conversation
 )
 from .dependencies import valid_user_conversation_id
 
@@ -47,6 +48,11 @@ def create_conversation_api(
     conversation_model = create_conversation(
         user_id=user.user_id, conversation=body, db=db)
     return ConversationCreateResponse(conversation_id=conversation_model.conversation_id)
+
+
+@router.get('/{conversation_id}', response_model=Conversation)
+def get_conversation_api(conversation_id: Annotated[int, Depends(valid_user_conversation_id)], db: Annotated[Session, Depends(get_db)]):
+    return get_conversation(conversation_id=conversation_id, db=db)
 
 
 @router.patch('/{conversation_id}', status_code=204)
