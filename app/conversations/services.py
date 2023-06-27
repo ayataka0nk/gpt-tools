@@ -1,4 +1,5 @@
 from .schemas import Conversation, ConversationCreate, ConversationUpdate, PromptMessage, ConversationMessage
+from . import schemas, models
 from .models import ConversationModel, ConversationMessageModel
 from sqlalchemy import select
 from app.database import Session
@@ -51,28 +52,41 @@ def get_conversation_messages(conversation_id: int, db: Session) -> list[Convers
 
 
 def make_prompt_messages(conversation_id: int, db: Session) -> list[PromptMessage]:
+    system_message = get_system_message(conversation_id, db)
     # とりあえず直近6件だけ TODO 用途に応じた過去のプロンプト管理を設計
-    statement = select(ConversationMessageModel).where(
+    conversation_message_statement = select(ConversationMessageModel).where(
         ConversationMessageModel.conversation_id == conversation_id).order_by(
         ConversationMessageModel.created_at.desc()).limit(6)
-    conversation_message_models = db.execute(statement).scalars().all()
+    conversation_message_models = db.execute(
+        conversation_message_statement).scalars().all()
     conversation_messages = list(map(lambda message: ConversationMessage.from_conversation_message_model(
         message), conversation_message_models))  # プロンプトでは古い順に使うから並び反転
     conversation_messages.reverse()
+
     promptMessages = []
-    promptMessages.append(PromptMessage(
-        role=RoleType.SYSTEM.role,
-        content="涼宮ハルヒの憂鬱に登場する、涼宮ハルヒになりきって会話してください。"
-    ))
+    if (system_message is not None):
+        promptMessages.append(system_message.to_prompt_message())
+
     for conversation_message in conversation_messages:
         promptMessages.append(conversation_message.to_prompt_message())
+    print(promptMessages)
     return promptMessages
 
 
+def get_system_message(conversation_id: int, db: Session) -> schemas.ConversationSystemMessage | None:
+    statement = select(models.ConversationSystemMessage).where(
+        models.ConversationSystemMessage.conversation_id == conversation_id)
+    system_message_model = db.execute(statement).scalar_one_or_none()
+    if (system_message_model is not None):
+        return schemas.ConversationSystemMessage.from_conversation_system_message_model(
+            system_message_model)
+    else:
+        return None
+
+
 def store_system_message(conversation_id: int, system_message_content: str, db: Session):
-    system_message = ConversationMessageModel(
+    system_message = models.ConversationSystemMessage(
         conversation_id=conversation_id,
-        role_type=RoleType.SYSTEM.id,
         content=system_message_content,
         created_at=datetime.now()
     )

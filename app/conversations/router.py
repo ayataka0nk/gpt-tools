@@ -16,6 +16,7 @@ from .schemas import (
 from ..database import get_db, Session
 
 from app.llms import ChatCompletion, create_chat_completion_gpt3p5turbo
+from . import services, schemas
 
 from .services import (
     get_conversations,
@@ -90,7 +91,15 @@ def post_conversation_message_api(
     return StreamingResponse(result, media_type="text/event-stream")
 
 
-@ router.post('/{conversation_id}/system-message')
+@router.get('/{conversation_id}/system-messages', response_model=schemas.ConversationSystemMessage)
+def get_system_message_api(
+    conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    return services.get_system_message(conversation_id=conversation_id, db=db)
+
+
+@ router.post('/{conversation_id}/system-messages')
 def post_system_message_api(
     conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
     body: PostConversationSystemMessageRequestBody,
