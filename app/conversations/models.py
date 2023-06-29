@@ -10,7 +10,7 @@ class ConversationModel(Base):
     conversation_id = sa.Column(sa.Integer, primary_key=True)
     user_id = sa.Column(sa.Integer, sa.ForeignKey(
         'users.user_id'), nullable=False)
-    title = sa.Column(sa.Text, nullable=False)
+    title = sa.Column(sa.Text, nullable=True)
     created_at = sa.Column(sa.DateTime, nullable=False,
                            server_default=func.current_timestamp())
 

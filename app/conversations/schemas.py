@@ -9,7 +9,7 @@ from . import models
 class Conversation(BaseModel):
     conversation_id: int = Field(..., example=1)
     user_id: int = Field(..., example=1)
-    title: str = Field(..., example="英会話の練習")
+    title: str = Field(None, example="英会話の練習")
     created_at: datetime = Field(..., example="2020-01-01 00:00:00")
 
     def from_conversation_model(model: ConversationModel):
@@ -22,7 +22,7 @@ class Conversation(BaseModel):
 
 
 class ConversationCreate(BaseModel):
-    title: str = Field('No Title', example="英会話の練習")
+    title: str = Field(None, example="英会話の練習")
 
 
 class ConversationCreateResponse(BaseModel):
@@ -30,7 +30,7 @@ class ConversationCreateResponse(BaseModel):
 
 
 class ConversationUpdate(BaseModel):
-    title: str = Field(..., example="英会話の練習")
+    title: str = Field(None, example="英会話の練習")
 
 
 class ConversationMessage(BaseModel):

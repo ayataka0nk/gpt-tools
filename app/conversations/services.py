@@ -84,7 +84,7 @@ def get_system_message(conversation_id: int, db: Session) -> schemas.Conversatio
         return None
 
 
-def store_system_message(conversation_id: int, system_message_content: str, db: Session):
+def store_system_message(conversation_id: int, system_message_content: str, db: Session) -> int:
     system_message = models.ConversationSystemMessage(
         conversation_id=conversation_id,
         content=system_message_content,
@@ -92,6 +92,8 @@ def store_system_message(conversation_id: int, system_message_content: str, db: 
     )
     db.add(system_message)
     db.commit()
+    db.refresh(system_message)
+    return system_message.conversation_system_message_id
 
 
 def post_conversation_message(

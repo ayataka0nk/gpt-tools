@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from app.users import User
 from app.auths import get_user
@@ -96,7 +96,13 @@ def get_system_message_api(
     conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
     db: Annotated[Session, Depends(get_db)],
 ):
-    return services.get_system_message(conversation_id=conversation_id, db=db)
+    system_message = services.get_system_message(
+        conversation_id=conversation_id, db=db)
+    if (system_message is None):
+        # 404を返す
+        raise HTTPException(status_code=404, detail="System Message Not Found")
+    else:
+        return system_message
 
 
 @ router.post('/{conversation_id}/system-messages')
@@ -105,8 +111,10 @@ def post_system_message_api(
     body: PostConversationSystemMessageRequestBody,
     db: Annotated[Session, Depends(get_db)],
 ):
-    store_system_message(
+    conversation_system_message_id = store_system_message(
         conversation_id=conversation_id,
         system_message_content=body.system_message,
         db=db)
-    return
+    return {
+        conversation_system_message_id: conversation_system_message_id
+    }
