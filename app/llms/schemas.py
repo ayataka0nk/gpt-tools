@@ -10,3 +10,7 @@ class PromptMessage(BaseModel):
             "role": self.role,
             "content": self.content
         }
+
+
+class LLMSettings(BaseModel):
+    model_type: int = Field(..., example=1)

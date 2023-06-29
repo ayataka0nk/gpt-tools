@@ -5,7 +5,7 @@ from sqlalchemy import select
 from app.database import Session
 from datetime import datetime
 from .constants import RoleType
-from app.llms import ChatCompletion
+from app import llms
 
 
 def get_conversations(user_id: int, db: Session) -> list[Conversation]:
@@ -100,7 +100,10 @@ def post_conversation_message(
         conversation_id: int,
         user_message_content: str,
         db: Session,
-        chatCompletion: ChatCompletion):
+        chat_completion_service_factory: llms.ChatCompletionServiceFactory):
+    conversation = get_conversation(conversation_id=conversation_id, db=db)
+    chat_completion_service = chat_completion_service_factory.create(
+        llm_settings=llms.LLMSettings(model_type=conversation.model_type))
     user_message = ConversationMessageModel(
         conversation_id=conversation_id,
         role_type=RoleType.USER.id,
@@ -114,7 +117,8 @@ def post_conversation_message(
         conversation_id=conversation_id, db=db)
     try:
         assistant_message_content = ''
-        completion = chatCompletion.stream(promptMessages=promptMessages)
+        completion = chat_completion_service.stream(
+            promptMessages=promptMessages)
 
         for word in completion:
             assistant_message_content += word

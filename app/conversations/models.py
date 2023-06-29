@@ -11,6 +11,7 @@ class ConversationModel(Base):
     user_id = sa.Column(sa.Integer, sa.ForeignKey(
         'users.user_id'), nullable=False)
     title = sa.Column(sa.Text, nullable=True)
+    model_type = sa.Column(sa.Integer, nullable=False)
     created_at = sa.Column(sa.DateTime, nullable=False,
                            server_default=func.current_timestamp())
 

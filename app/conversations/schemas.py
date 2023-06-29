@@ -10,13 +10,16 @@ class Conversation(BaseModel):
     conversation_id: int = Field(..., example=1)
     user_id: int = Field(..., example=1)
     title: str = Field(None, example="英会話の練習")
+    model_type: int = Field(..., example=1)
     created_at: datetime = Field(..., example="2020-01-01 00:00:00")
 
     def from_conversation_model(model: ConversationModel):
+        print(type(model.model_type))
         return Conversation(
             conversation_id=model.conversation_id,
             user_id=model.user_id,
             title=model.title,
+            model_type=model.model_type,
             created_at=model.created_at,
         )
 
