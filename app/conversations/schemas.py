@@ -14,7 +14,6 @@ class Conversation(BaseModel):
     created_at: datetime = Field(..., example="2020-01-01 00:00:00")
 
     def from_conversation_model(model: ConversationModel):
-        print(type(model.model_type))
         return Conversation(
             conversation_id=model.conversation_id,
             user_id=model.user_id,
@@ -25,7 +24,8 @@ class Conversation(BaseModel):
 
 
 class ConversationCreate(BaseModel):
-    title: str = Field(None, example="英会話の練習")
+    title: str = Field(default=None, example="英会話の練習")
+    model_type: int = Field(default=1, example=1)
 
 
 class ConversationCreateResponse(BaseModel):
@@ -87,3 +87,4 @@ class PostConversationMessageRequestBody(BaseModel):
 class PostConversationSystemMessageRequestBody(BaseModel):
     system_message: str = Field(...,
                                 example='あなたは優秀なソフトウェアエンジニアとして、userの相談を受けてください。\nuserはプログラミングについての知識がないので、できるだけわかりやすく説明してください。')
+    model_type: int = Field(..., example=1)

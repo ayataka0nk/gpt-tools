@@ -18,7 +18,9 @@ def get_conversations(user_id: int, db: Session) -> list[Conversation]:
 def create_conversation(user_id: int, conversation: ConversationCreate, db: Session):
     conversation_model = ConversationModel(
         user_id=user_id,
-        title=conversation.title)
+        title=conversation.title,
+        model_type=conversation.model_type,
+    )
     db.add(conversation_model)
     db.commit()
     db.refresh(conversation_model)
@@ -84,12 +86,33 @@ def get_system_message(conversation_id: int, db: Session) -> schemas.Conversatio
         return None
 
 
-def store_system_message(conversation_id: int, system_message_content: str, db: Session) -> int:
-    system_message = models.ConversationSystemMessage(
-        conversation_id=conversation_id,
-        content=system_message_content,
-        created_at=datetime.now()
-    )
+def create_or_update_conversation_settings(
+        conversation_id: int,
+        system_message_content: str,
+        modelType: llms.LLMModelType,
+        db: Session) -> int:
+    # conversation 更新
+    conversation = db.execute(
+        select(ConversationModel).where(
+            ConversationModel.conversation_id == conversation_id)
+    ).scalar_one_or_none()
+    conversation.model_type = modelType.id
+    db.add(conversation)
+
+    system_message_model: models.SystemMessageModel | None = db.execute(
+        select(models.ConversationSystemMessage).where(
+            models.ConversationSystemMessage.conversation_id == conversation_id)
+    ).scalar_one_or_none()
+
+    if (system_message_model is not None):
+        system_message_model.content = system_message_content
+        system_message = system_message_model
+    else:
+        system_message = models.ConversationSystemMessage(
+            conversation_id=conversation_id,
+            content=system_message_content,
+            created_at=datetime.now()
+        )
     db.add(system_message)
     db.commit()
     db.refresh(system_message)

@@ -13,7 +13,6 @@ class LLMModelType(Enum):
     @classmethod
     def value_of(cls, id: int):
         for e in LLMModelType:
-            print(type(id))
             if e.id == id:
                 return e
         raise ValueError('invalid id')

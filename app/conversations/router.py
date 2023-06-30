@@ -15,7 +15,7 @@ from .schemas import (
 )
 from ..database import get_db, Session
 
-from app.llms import ChatCompletion, chat_completion_service_factory
+from app import llms
 from . import services, schemas
 
 from .services import (
@@ -24,7 +24,7 @@ from .services import (
     update_conversation,
     get_conversation_messages,
     post_conversation_message,
-    store_system_message,
+    create_or_update_conversation_settings,
     get_conversation
 )
 from .dependencies import valid_user_conversation_id
@@ -81,7 +81,7 @@ def post_conversation_message_api(
     conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
     body: PostConversationMessageRequestBody,
     db: Annotated[Session, Depends(get_db)],
-    chat_completion_service_factory: Annotated[ChatCompletion, Depends(chat_completion_service_factory)],
+    chat_completion_service_factory: Annotated[llms.ChatCompletion, Depends(llms.chat_completion_service_factory)],
 ):
     result = post_conversation_message(
         conversation_id=conversation_id,
@@ -105,14 +105,15 @@ def get_system_message_api(
         return system_message
 
 
-@ router.post('/{conversation_id}/system-messages')
+@ router.put('/{conversation_id}/system-messages')
 def post_system_message_api(
     conversation_id: Annotated[int, Depends(valid_user_conversation_id)],
     body: PostConversationSystemMessageRequestBody,
     db: Annotated[Session, Depends(get_db)],
 ):
-    conversation_system_message_id = store_system_message(
+    conversation_system_message_id = create_or_update_conversation_settings(
         conversation_id=conversation_id,
+        modelType=llms.LLMModelType.value_of(body.model_type),
         system_message_content=body.system_message,
         db=db)
     return {
